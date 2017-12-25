@@ -1,0 +1,69 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Dec 25 08:41:56 2017
+
+@author: DELL
+"""
+
+import pandas as pd  
+from WindPy import *  
+import datetime,time  
+import os 
+import numpy as np
+import xlwt
+
+def calculate_volatilities(index,start_date,end_date):
+    #由wind导入数据
+    w.start()
+    stock=w.wsd(index, "trade_code,close,pre_close,volume,amt,pct_chg", start_date, end_date)  
+    index_data = pd.DataFrame()  
+    index_data['trade_date']=['trade_date']+stock.Times  
+    stock.Data[0]=index  
+    index_data['stock_code']=stock.Data[0]  
+    #index_data['stock_code'] =symbol  
+    index_data['close']=['close']+stock.Data[1]  
+    index_data['pre_close']=['pre_close']+stock.Data[2]  
+    index_data['volume']=['volume']+stock.Data[3]  
+    index_data['amt']=['amt']+stock.Data[4]  
+    index_data['pct_chg']=['pct_chg']+stock.Data[5]  
+    #index_data['pct_chg']=index_data['pct_chg']/100  
+    
+    #日期转换
+    dateFormat = xlwt.XFStyle()
+    dateFormat.num_format_str = 'yyyy/mm/dd'
+    
+    #设置excel文件名称
+    name0='D:\\中粮期货-吕凯\\bab\\'
+    name1='.xls'
+    name2=index.split('.')[0]
+    filename=name0+name2+name1
+    
+    #加标题
+    indexname=['futures_name']
+    n=len(index_data['stock_code'])
+    for i in range(n):
+        indexname.append(index_data['stock_code'][i])
+    
+    workbook = xlwt.Workbook(encoding = 'ascii')
+    worksheet = workbook.add_sheet('data')
+    num=len(index_data['stock_code'])
+    for i in range(num):
+        worksheet.write(i, 0, index_data['trade_date'][i],dateFormat)
+        worksheet.write(i, 1, indexname[i])
+        worksheet.write(i, 2, index_data['close'][i])
+        worksheet.write(i, 3, index_data['pre_close'][i])
+        worksheet.write(i, 4, index_data['volume'][i])
+        worksheet.write(i, 5, index_data['amt'][i])
+        worksheet.write(i, 6, index_data['pct_chg'][i])
+    workbook.save(filename)
+
+if __name__=='__main__':
+    index=['I.DCE', 'M.DCE', 'C.DCE', 'P.DCE', 'L.DCE', 'PP.DCE', 'Y.DCE', \
+           'CS.DCE', 'JM.DCE', 'J.DCE', 'V.DCE', 'JD.DCE', 'A.DCE', 'RB.SHF', \
+           'HC.SHF', 'BU.SHF', 'RU.SHF', 'NI.SHF', 'ZN.SHF', 'AG.SHF', 'AL.SHF', \
+           'CU.SHF', 'AU.SHF', 'PB.SHF', 'SN.SHF', 'MA.CZC', 'TA.CZC', 'RM.CZC', \
+           'SR.CZC', 'FG.CZC', 'ZC.CZC', 'SM.CZC', 'CF.CZC', 'OI.CZC', 'SF.CZC', \
+           'CY.CZC', 'WH.CZC', 'T.CFE', 'IF.CFE', 'IC.CFE', 'TF.CFE', 'IH.CFE']
+    num=len(index)
+    for i in range(num):
+        calculate_volatilities(index[i],'19900101','20171222')
